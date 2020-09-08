@@ -68,6 +68,7 @@ To use a package, and the functions and methods it enables, you first have to in
 
 ```{r}
 install.packages('tidyverse')
+install.packages('knitr')
 ```
 
 ### Loading Packages
