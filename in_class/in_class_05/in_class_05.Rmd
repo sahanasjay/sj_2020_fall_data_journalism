@@ -126,7 +126,7 @@ least_covid_cases_state
 
 # Write the answer in a comment
 # Q: Which state had the fewest total covid cases on August 30? How many cases?
-# A: 
+# A: Vermont, 1608
 ```
 
 Q: Which state had the fewest total covid cases on August 30?
@@ -147,7 +147,7 @@ most_covid_cases_state
 
 # Write the answer in a comment
 # Q: Which state had the most total covid cases on August 30? How many cases?
-# A: 
+# A: California, 706589
 ```
 
 ## Grouping and Summarizing | Calculating averages
@@ -173,8 +173,8 @@ averages_county_cases_by_state <- covid_county %>%
 averages_county_cases_by_state
 
 # Write the answer in a comment
-# Q: Which state has the most counties in our data? How many?
-# A: 
+# Q: Which state has the most cases per counties in our data? How many?
+# A: Arizona, about 13446
 ```
 
 ## Grouping and Summarizing | Counting
@@ -209,7 +209,7 @@ most_counties_state
 
 # Write the answer in a comment
 # Q: Which state has the most counties in our data? How many?
-# A: 
+# A: Texas, 251
 ```
 
 ## Grouping and Summarizing | Calculating Min and Max
@@ -240,7 +240,7 @@ min_max_state
 
 # Write the answer in a comment
 # Q: Which state had the single county with the largest case count?  
-# A: 
+# A: California
 
 
 ```
@@ -257,9 +257,31 @@ It's okay if you don't get through all of them, just get through as many as you 
 
 * Q: Which state had the highest total number of deaths? 
 * Q: Which state had the lowest total number of deaths?
+```{r}
+min_max_deaths <- covid_county %>%
+  group_by(state) %>%
+  summarise(max_death_state = max(deaths), 
+            min_death_state = min(deaths),
+            total_deaths = sum(deaths))%>%
+  arrange(desc(total_deaths))
+
+min_max_deaths
+#A: New York max, Alaska min 
+```
 * Q: Which state had the highest average number of deaths per county? What was that number? 
 * Q: Which state had the lowest average number of deaths per county? What was that number? 
+```{r}
+average_county_deaths_real <- covid_county%>%
+  group_by(state)%>%
+  summarise(average_county_deaths = mean(deaths))%>%
+  arrange(desc(average_county_deaths))
 
+average_county_deaths_real
+
+#A: New Jersey had the most, Alaska had the least  
+  
+
+```
 If you finish all of those, create your own questions and answer them! 
 
 -30-
