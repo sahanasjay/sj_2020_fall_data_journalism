@@ -114,5 +114,23 @@ Okay, now it's your turn to work together in small groups to use this newly crea
 
 *  Which state had the highest number of COVID-19 cases per 1,000 people on August 30, 2020?
 *  And while you're at it, answer this question: Which state had the lowest number of COVID-19 deaths per 1,000 people on August 30, 2020?
+```{r}
+state_case_per_thousand <- state_covid_population%>%
+  select(state, total_cases, population)%>%
+  mutate(cases_per_thousand = (total_cases/population)*1000 )%>%
+  arrange(desc(cases_per_thousand))
+state_case_per_thousand
 
+#A: Lousiana had the highest number of cases per thousand 
+
+```
+```{r}
+state_deaths_per_thousand <- state_covid_population%>%
+  select(state, total_deaths, population)%>%
+  mutate(deaths_per_thousand = (total_deaths/population)*1000 )%>%
+  arrange(deaths_per_thousand)
+state_deaths_per_thousand
+
+#A: Hawaii had the lowest number of deaths per thousand 
+```
 -30-

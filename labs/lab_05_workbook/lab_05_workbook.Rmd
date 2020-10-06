@@ -502,10 +502,9 @@ least_counties_per_state
 #Q: which county in Texas had the highest average number of deaths?
 
 texas_most_deaths <- covid_county%>%
-  group_by(county)%>%
-  filter(state == "Texas")%>%
-  summarise(texas_deaths = mean(deaths))%>%
-  arrange(desc(texas_deaths))
+  group_by(county, state)%>%
+  summarise(deaths = mean(deaths))%>%
+  arrange(desc(deaths))
 
 texas_most_deaths
 #A: It looks like the answer is Harris county with 2188 deaths....I'm suspicious of the whole number. I'd love to check this out in class.  
