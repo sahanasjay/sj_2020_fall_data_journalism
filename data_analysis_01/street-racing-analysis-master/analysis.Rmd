@@ -25,11 +25,23 @@ You can also embed plots, for example:
 plot(pressure)
 ```
 
+```{r}
+# install.packages("sf")
+
+library(tidyverse)
+library(sf)
+library(lubridate)
+options(scipen = 999)
+```
+
+
 Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
 ```{r}
 streetracing <-read_csv("data/street-racing-fatalities.csv")
 fatalities <-read_csv("data/fatalities.csv")
-
+citypop <- st_read("data/hoods.shp")%>%
+  as_tibble()%>%
+  select(-geometry)
 
 ```
 
@@ -47,12 +59,38 @@ commerce_deaths <-fatalities_truncated%>%
 commerce_deaths
 
 ```
+```{r}
+death_by_city <- fatalities_truncated%>%
+  group_by(name)%>%
+  summarise(city_deaths = n())%>%
+  arrange(desc(city_deaths))
 
+death_by_city
+```
+```{r}
+death_by_city_pop <- death_by_city%>%
+ inner_join(citypop)%>%
+  mutate(deaths_per_capita = (city_deaths/population*10000))%>%
+  filter(population > 1000)%>%
+  arrange(desc(deaths_per_capita))
+
+
+death_by_city_pop
+
+```
 
 ```{r}
 deaths_by_year <- streetracing%>%
-  mutate(year )
+  mutate(year = year(DeathDateTime))%>%
+  select(year,everything())
  
 deaths_by_year
 
+```
+```{r}
+none <-streetracing%>%
+  anti_join(fatalities,by = c("CaseNum"="case_number"))
+
+
+none
 ```
