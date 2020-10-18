@@ -68,6 +68,8 @@ death_by_city <- fatalities_truncated%>%
 death_by_city
 ```
 ```{r}
+# This code joins the citypop table we created with the death by city frame and then creates a new column dividing the number of deaths per city by the population (multiplying by 10,000) and then filters out any cities with populations less than a thousand, generating the 4th finding: Deaths have occurred all across L.A. County, with the biggest concentration in the small city of Commerce. Eleven have died on the small, industrial city’s streets since 2000.
+
 death_by_city_pop <- death_by_city%>%
  inner_join(citypop)%>%
   mutate(deaths_per_capita = (city_deaths/population*10000))%>%
