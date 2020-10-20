@@ -85,10 +85,21 @@ death_by_city_pop
 deaths_by_year <- streetracing%>%
   mutate(year = year(DeathDateTime))%>%
   select(year,everything())
+
  
 deaths_by_year
 
 ```
+```{r}
+deaths_grouped<- deaths_by_year%>%
+  group_by(year)%>%
+  summarise(total_deaths = n())%>%
+  arrange(desc(total_deaths))
+
+deaths_grouped
+
+```
+
 ```{r}
 none <-streetracing%>%
   anti_join(fatalities,by = c("CaseNum"="case_number"))
