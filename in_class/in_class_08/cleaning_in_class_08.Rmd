@@ -137,7 +137,7 @@ Q: How many deaths are there in the county with FIPS code 24003 -- Anne Arundel?
 county_covid_deaths %>%
   filter(fips_code == 24003)
 
-# A: 236
+# A: 236 deaths
 ```
 
 ### Fix multiple values in state column
