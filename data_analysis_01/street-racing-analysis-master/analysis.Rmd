@@ -27,7 +27,7 @@ plot(pressure)
 
 ```{r}
 # install.packages("sf")
-
+library(janitor)
 library(tidyverse)
 library(sf)
 library(lubridate)
@@ -83,14 +83,18 @@ death_by_city_pop
 
 ```{r}
 deaths_by_year <- streetracing%>%
-  mutate(year = year(DeathDateTime))%>%
-  select(year,everything())
-
+  clean_names()%>%
+  mutate(year = year(death_date_time))%>%
+  select(year, case_num, name_first, name_last, victim_role)
  
 deaths_by_year
 
 ```
 ```{r}
+
+# This codeblock reverse-engineers a portion of the following finding: "The deadliest year on record was 2007, with 18 fatal crashes. After a period with relatively few recorded deaths, the count grew in recent years, with 15 fatalities in 2015, 11 in 2016 and 12 deaths in 2017, the Times analysis shows.
+
+#This codeblock shows that "the deadliest year on record was 2007, with 18 fatal crashes" by: creating a new object called deaths_grouped and then groups the deaths_by_year table by year, and then counts the number of deaths in each year, and then arranges the total_deaths column from highest to lowest. 
 deaths_grouped<- deaths_by_year%>%
   group_by(year)%>%
   summarise(total_deaths = n())%>%
@@ -98,6 +102,43 @@ deaths_grouped<- deaths_by_year%>%
 
 deaths_grouped
 
+```
+```{r}
+
+# This codeblock reverse-engineers a portion of the following finding: "The deadliest year on record was 2007, with 18 fatal crashes. After a period with relatively few recorded deaths, the count grew in recent years, with 15 fatalities in 2015, 11 in 2016 and 12 deaths in 2017, the Times analysis shows.
+
+#This codeblock shows that "after a period with relatively few recorded deaths, the count grew in recent years, with 15 fatalitiesin 2015, 11 in 2016 and 12 deaths in 2017," by: creating a new object called deaths_grouped_again and then grouping the deaths_by_year table by year, and then counting the number of deaths in each year, and displaying a table that shows that from 2009-2013, streetracing deaths were in the single digits until 2014, when they hit 11 and then 2015, with 15 deaths. 
+
+deaths_grouped_again<- deaths_by_year%>%
+  group_by(year)%>%
+  summarise(total_deaths = n())
+
+deaths_grouped_again
+```
+```{r}
+deaths_by_year_expanded <- streetracing%>%
+  clean_names()%>%
+  mutate(year = year(death_date_time))%>%
+  select(year, gender, age, case_num, name_first, name_last, victim_role)
+  
+deaths_by_year_expanded
+```
+```{r}
+
+#this codeblock reproduces the finding that 47% of the victims were behind the wheel by grouping the victims by their role and then summarising the number of victims in each role - 85 of the 179 total victims were suspected racers (behind the wheel), which comes out to 47.4%, or 47% rounded. 
+
+behind_wheel <- deaths_by_year_expanded%>%
+  group_by(victim_role)%>%
+  summarise(n())
+
+behind_wheel
+```
+```{r}
+male_and_young <- deaths_by_year_expanded%>%
+  group_by(gender)%>%
+  summarise(n())
+  
+male_and_young
 ```
 
 ```{r}
