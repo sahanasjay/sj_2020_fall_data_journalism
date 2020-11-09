@@ -47,9 +47,12 @@ library(lubridate)
 
 ## Load and clean data
 
-DESCRIPTION OF WHAT THE DATA IS, WHERE YOU GOT IT, LINK IT, WHAT IT INCLUDES, INCLUDING A LIST OF WHAT EACH FIELD IS. 
+STREETRACING FATALITIES is a list of the 179 people who died in suspected streetracing accidents and all of the related information. it includes: age | case number | death date and time | victim gender | victim name first | victim name last | victim role in accident | full event address | geocoding address for mapping purposes. [Street-racing-fatalities.csv](https://github.com/datadesk/street-racing-analysis/blob/master/input/street-racing-fatalities.csv)
 
-* age | number | age of driver
+FATALITIES is a dataset derived to the streetracing dataset, but it discludes three vicitms who do not have a full event address or geocode tags and includes the city where each event ocurred (either "los-angeles" or "N/A" values).This dataset was used to create a map in the original "Out of Control" story. The set includes:  age | city | population | geometry | index-right | case number | death year | victim gender | victim name first | victim name last | victim role in accident | full event address | geocoding address for mapping purposes | is-mapped (all values = "TRUE"). [Fatalities.csv](https://github.com/datadesk/street-racing-analysis/blob/master/output/fatalities.csv)
+
+CITYPOP is a dataset that comes from a shapefile that contains the population for each area of California that had streetracing deaths included in the story. The columns are: name (of area) | city | population. 
+[hoods.shp, the shapefile we used to create citypop](https://github.com/datadesk/street-racing-analysis/blob/master/input/hoods.shp)
 
 ```{r}
 # Loading in the "street-racing-fatalities" dataframe provided by the Times. This dataset includes all 179 people who died in suspected streetracing-related accidents. 
