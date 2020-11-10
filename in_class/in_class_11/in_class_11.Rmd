@@ -99,7 +99,16 @@ We can keep adding functions from the ggplot2 library to improve the chart, usin
   # Display the data as a bar chart
 anne_arundel %>%
   ggplot(aes(month, case_rate)) +
-  geom_bar(stat="identity")
+  geom_bar(stat="identity",
+           fill="steelblue")+
+  labs(
+    x="Month",
+    y="Cases per 1,000 people",
+    title="In Anne-Arundel, steady increase in COVID cases",
+    caption = "Source: NYT Covid data"
+  )+
+  geom_text(aes(label=round(case_rate,2)),
+            vjust=-.1)
 
 ```
 
