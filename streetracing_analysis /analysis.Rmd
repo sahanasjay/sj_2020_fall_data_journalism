@@ -242,7 +242,7 @@ behind_wheel
 
 ```{r}
 
-# This codeblopck reproduces the finding that the dead were overwhelmingly male and young, with more than half being 27 or younger. This was for our own curiosity, not reverse-engineering any finding of the LA times. 
+# This codeblock reproduces the finding that the dead were overwhelmingly male and young, with more than half being 21 or younger. This was for our own curiosity, not reverse-engineering any finding of the LA times. 
 
 # Create an object called "male_and_young" that grabs data from object "deaths_by_year_expanded"
 # AND THEN create a column using feature 'mutate()' that will be called "age_group"
