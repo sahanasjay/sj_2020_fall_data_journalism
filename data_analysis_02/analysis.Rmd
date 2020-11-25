@@ -29,16 +29,48 @@ Note that the `echo = FALSE` parameter was added to the code chunk to prevent pr
 
 ## Load libraries 
 ```{r}
+# install.packages("leaflet")
 library(tidyverse)
 library(janitor)
+library(leaflet)
+
 
 ```
 
 ## Load data
 ```{r}
 heritage<- read_csv("data/whose_heritage.csv")%>%
-  clean_names()
+  clean_names()%>%
+  separate(coordinates, into = c("lat", "lng"),sep =",")%>%
+  mutate(lat = as.numeric(lat), 
+         lng = as.numeric(lng))
 
+# Creating list of border states 
+
+side<-heritage%>%
+  rename(clean_side = side)%>%
+  group_by(state, clean_side)%>%
+  count()%>%
+  filter(!is.na(clean_side))%>%
+  arrange(state)%>%
+  mutate(clean_side = case_when(
+    state =="AL" ~ "South", 
+    state =="AR" ~ "South",
+    state == "TX" ~ "South",
+    state == "VA" ~ "South",
+    TRUE ~ clean_side
+  ))%>%
+  select(-n)%>%
+  distinct()
+
+
+# Join cleaned side with heritage 
+heritage<- heritage%>%
+  inner_join(side, by = c("state"))%>%
+  select(-side)%>%
+  rename(side = clean_side)
+  
+  
 ```
 ## Exploratory analysis 
 ```{r}
@@ -58,11 +90,43 @@ heritage%>%
 northern_states<- heritage%>%
   filter (side =="North")%>%
   group_by(state)%>%
-  summarise(n())
+  summarise(count = n())%>%
+  arrange(desc(count))
 
 northern_states
 
+heritage%>%
+  group_by(state, side)%>%
+  summarize(count = n())
+
+oh <-heritage%>%
+  filter( state =="OH")
+
 # Doesn't give us an accurate picture — Cali has more "monuments" than other "northern" states, but some have an N/A value under "Northern." Wonder why! 
+
+
+
+```
+
+```{r}
+heritage%>%
+  filter( tracking_status != "Removed", side == "North")%>%
+  group_by(symbol_type)%>%
+  count()
+```
+
+```{r}
+
+# Makin' a map
+
+heritage%>%
+  filter(state == "DC", tracking_status != "Removed")%>%
+  leaflet()%>%
+  addProviderTiles(provider = "CartoDB.Positron")%>%
+  addMarkers(lat = ~lat, lng = ~lng, 
+             label = ~unique_id)
+# Only the monuments in Dc that are 
+
 ```
 
 ###How many confederate monuments in Cali? 
