@@ -120,7 +120,7 @@ heritage%>%
 # Makin' a map
 
 heritage%>%
-  filter(state == "DC", tracking_status != "Removed")%>%
+  filter(state == "CA", tracking_status != "Removed")%>%
   leaflet()%>%
   addProviderTiles(provider = "CartoDB.Positron")%>%
   addMarkers(lat = ~lat, lng = ~lng, 
@@ -156,8 +156,8 @@ california
 # Q: is there a geographic concentration of monuments in any particular area of California?  
 # A: There is not — the monuments are spread out across several counties in different parts of California (some are more inland, some coastal, some in the north and others in the south) 
 ```
-### 
 
+##Who
 ```{r}
 
 #Who is responsible for putting these monuments up?
@@ -178,6 +178,8 @@ cali_when<- heritage%>%
   count()
 
 cali_when
+
+#A: As late as 1959, with 4 unknown
 ```
 
 ```{r}
@@ -233,7 +235,7 @@ heritage%>%
     arrange(desc(year_removed))
 
 #tells the rate of removals for California
-# only one of the 6 remopved, removed this year 
+# only one of the 6 removed, removed this year 
 
 ```
 

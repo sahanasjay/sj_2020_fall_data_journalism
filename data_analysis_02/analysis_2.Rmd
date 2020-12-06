@@ -1,0 +1,237 @@
+---
+title: "confederate_monuments_analysis"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## R Markdown
+
+This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
+
+When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
+
+##Load Libraries 
+```{r}
+# install.packages("leaflet")
+library(tidyverse)
+library(janitor)
+library(leaflet)
+library(dplyr)
+
+```
+
+##Loading in the data 
+```{r}
+#reading in the data and converting the coordinates column into two separate numeric columns for latitude and longitude so leaflet can map
+heritage<- read_csv("data/whose_heritage.csv")%>%
+  clean_names()%>%
+  separate(coordinates, into = c("lat", "lng"),sep =",")%>%
+  mutate(lat = as.numeric(lat), 
+         lng = as.numeric(lng))
+
+# Reconfiguring data frame so that each state falls into one category "South" or "North" or "Not Applicable" to better view the number of monuments that fall into each category (monuments in union states v. monuments in confederate states)
+side<-heritage%>%
+  rename(clean_side = side)%>%
+  group_by(state, clean_side)%>%
+  count()%>%
+  filter(!is.na(clean_side))%>%
+  arrange(state)%>%
+  mutate(clean_side = case_when(
+    state =="AL" ~ "South", 
+    state =="AR" ~ "South",
+    state == "TX" ~ "South",
+    state == "VA" ~ "South",
+    TRUE ~ clean_side
+  ))%>%
+  select(-n)%>%
+  distinct()
+
+
+# Join cleaned side with heritage 
+heritage<- heritage%>%
+  inner_join(side, by = c("state"))%>%
+  select(-side)%>%
+  rename(side = clean_side)
+
+
+```
+## Exploratory analysis 
+```{r}
+#Q: How many monuments by state?
+heritage%>%
+  group_by(side)%>%
+  count()%>%
+  arrange(desc(n))
+#Q: How many monuments by side? 
+heritage%>%
+  group_by(side)%>%
+  count()%>%
+  arrange(desc(n))
+
+#total number of monuments: Union (northern) states = 46, Confederate (southern) states = 1757, boarder states = 98, "not applicable" states = 39
+  
+```
+##Question 1: Which Union state has the most confederate monuments?
+```{r}
+# Q Which Northern(Union) state has the most confederate monuments?
+
+northern_states<- heritage%>%
+  filter (side =="North")%>%
+  group_by(state)%>%
+  summarise(count = n())%>%
+  arrange(desc(count))
+
+northern_states
+
+# A: California has the most monuments — so we're focusing in on Cali 
+```
+##A look at the california monuments
+```{r}
+heritage%>%
+  filter(state == "CA")
+
+# # monuments are trees in national parks. Interesting. Wonder why! 
+```
+##Sorting monuments by county and mapping California's monuments - removed and unremoved
+```{r}
+california <-heritage%>%
+  filter(state == "CA")%>%
+  group_by(county)%>%
+  count()
+
+california
+
+
+heritage%>%
+  filter(state == "CA")%>%
+  leaflet()%>%
+  addProviderTiles(provider = "CartoDB.Positron")%>%
+  addMarkers(lat = ~lat, lng = ~lng, 
+             label = ~tracking_status)
+# Testing values by looking at map with no tracking status filter, then adding tracking status filter to see if there's geographical grouping. Doesn't really appear to be much grouping, monuments spread throughout coastal and inalnd counties; more monuments along southern cali than northern. NOTE: 2 monuments missing on map because of missing lat/lng values. 
+```
+##Who is responsible for erecting/naming these monuments? Who is the sponsor? When were they put up? 
+```{r}
+#Q: Who is responsible for putting these monuments up?
+
+cali_who <-heritage %>%
+  filter(state== "CA")%>%
+  group_by(sponsors)%>%
+  count()
+cali_who
+# A: the data shows that the United Daughters of the Confederacy lead the sponsors with 7 monuments
+
+# Q: When were they put up?
+
+cali_when<- heritage%>%
+  filter(state== "CA")%>%
+  group_by(year_dedicated)%>%
+  count()
+
+cali_when
+
+#A: As late as 1959, with 4 unknown
+```
+##What kinds of symbols/monuments exist? 
+```{r}
+#What kinds of symbols are currently in existence? How can we begin to investigate if they are on public or private land?
+cali_what <-heritage %>%
+  filter(state== "CA")%>%
+  group_by(symbol_type, symbol_category)%>%
+  count()
+cali_what
+#We see that there is a variety in the origins of the symbols, and no conclusive information within this data set about who owns the land.
+```
+##How many monuments in Cali have come down? When were they taken down — before/after Floyd?
+```{r}
+# part 1: How many monuments in Cali have come down?
+cali_monuments_down <- heritage %>%
+  filter(state == "CA") %>%
+  filter(tracking_status %in% c("Removed", "Renamed"))%>%
+  group_by(year_removed)%>%
+  count()
+ 
+cali_monuments_down
+
+# A: 6
+
+# part 2: When were they taken down — before/after Floyd?
+cali_monuments_down_bf_floyd <- cali_monuments_down %>%
+  filter(year_removed < 2020,) %>%
+  arrange(desc(year_removed))
+ 
+cali_monuments_down_bf_floyd
+
+# Before Floyd: *5 (see answer below for reasoning behind "*"). two in 2016, and one in 2017, 2018 and 2019.
+
+cali_monuments_down_af_floyd <- cali_monuments_down %>%
+  filter(year_removed >= 2020) %>%
+  arrange(desc(year_removed))
+ 
+cali_monuments_down_af_floyd
+
+# After Floyd: *1, in 2020. George Floyd was killed in 2020 and only one monument was removed/renamed in that year. Floyd was killed in the spring, so it's possible that this monument was taken down prior to his death, but given the large-scale removal of confederate monuments in the wake of his death, it's more likely that this monument was taken down in reaction to the tragedy and unrest that followed. 
+# Essentially, we know one was removed in 2020, but we have to consult other data to glean the exact date in 2020 to see if it was before or after George Floyd was slain.
+```
+##Percent removed in Southern states, Northern states, Border states and Not Applicable 
+```{r}
+
+percent_removed<-heritage%>%
+  group_by(side, tracking_status)%>%
+  mutate(tracking_status = case_when(
+    tracking_status =="Live (Statue Removed; Pedestal Remains)" ~ "Removed", 
+    tracking_status =="Renamed" ~ "Removed", 
+    TRUE ~ tracking_status
+  ))%>%
+  count()%>%
+  pivot_wider(names_from = tracking_status, values_from = n)%>%
+  clean_names()%>%
+  mutate(percent_removed = (removed / live)*100)
+  
+
+
+percent_removed
+
+# Shows the percent removed in each category - for the purpose of this exercise, we counted "renamed" and "statue removed" under the umbrella term "removed." Percentage of monuments removed in northern states is much higher than in southern states; southern states have relocated a notable number of monuments and the status on 4 are pending
+```
+
+##When were the most monuments removed, by side? 
+```{r}
+
+heritage%>%
+    group_by(side,year_removed)%>%
+    count()%>%
+    arrange(desc(n))
+
+#peak years of removal in southern states are 2017 and 2020, in Northern states 2017 
+```
+##And what is up with the three trees?? 
+```{r}
+#The three trees- what's up with that? (when named, why named, renamed?) (Theresa)
+
+heritage%>%
+  group_by(state, feature_name, symbol_category, honorees)%>%
+  filter(symbol_type == "Other", state == "CA", honorees == "Robert E. Lee")%>%
+ summarise()
+  
+  
+#The three trees are located in Sequoia National Park, Kings Canyon National Park, and Yosemite National Park and they're all dedicated to Robert E. Lee
+```
+
+```{r}
+#When named & renamed?
+heritage%>%
+  group_by(feature_name, year_dedicated, year_removed, tracking_status, sponsors)%>%
+  filter(state == "CA", symbol_category == "Parks/Trails", honorees == "Robert E. Lee")%>%
+  summarise(feature_name, year_dedicated)
+
+#Dedicated or named in 1875 and 1937 (missing data for Yosemite National Park tree)
+#All same type of tree (Sequoia)
+#Trees have not been removed or renamed since their dedication (live tracking status)
+#Sponsors are different (One is Richard Field (who is he??) and one is United Daughters of the Confederacy and on is NA)
+
+
+```
